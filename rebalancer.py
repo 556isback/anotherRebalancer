@@ -63,19 +63,25 @@ def manager(weights, data3, exchange_api):
     fcro = sum([bal[i] for i in bal])
     logbot.logs('>>> totoal position in USDT ' + str(round(cro,2)))
     logbot.logs('>>> totoal position used ' + str(round(cro / fcro*100,2))+'%')
-    for j in bal:
-        if j != 'USDT':
-            perc = bal[j] / fcro
-            diffs = weights[j] - perc
-            diffU = diffs*fcro
-            if diffU > 5 and diffs > exchange_api.threshold:
-                size = diffU / price[j]
-                if exchange_api.pos({'symbol':j,'size':size,'side':'buy'}):
-                    logbot.logs('add fund for ' + j + ' about ' + str(diffU) + 'USDT')
-            if diffU < -5 and diffs < exchange_api.threshold:
-                size = abs(diffU) / price[j]
-                if exchange_api.pos({'symbol':j,'size':size,'side':'sell'}):
-                    logbot.logs('reduce fund for ' + j + ' about ' + str(diffU) + 'USDT')
+    
+    diffs = {}
+    for sym in bal:
+        if sym != 'USDT':
+            perc = bal[sym] / fcro
+            diffs[sym] = weights[sym] - perc
+
+    diffs = {k: v  for k, v in sorted(diffs.items(), key=lambda item: item[1])}
+
+    for sym in diffs:
+        diffU = diffs[sym] * fcro
+        if diffU > 5 and diffs[sym] > exchange_api.threshold:
+            size = diffU / price[sym]
+            if exchange_api.pos({'symbol': sym, 'size': size, 'side': 'buy'}):
+                logbot.logs('add fund for ' + sym + ' about ' + str(diffU) + 'USDT')
+        if diffU < -5 and diffs[sym] < -exchange_api.threshold:
+            size = abs(diffU) / price[sym]
+            if exchange_api.pos({'symbol': sym, 'size': size, 'side': 'sell'}):
+                logbot.logs('reduce fund for ' + sym + ' about ' + str(diffU) + 'USDT')
 
 def iteratey():
     weights, data3, api = calpair()
