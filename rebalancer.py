@@ -52,7 +52,7 @@ def manager(weights, data3, exchange_api):
     logbot.logs('weights: '+str(weights))
     time.sleep(1)
     bal = exchange_api.balances()
-    price = {sym: data3[sym]['close'].values[1] for sym in data3}
+    price = {sym: data3[sym]['close'].values[-1] for sym in data3}
     price['USDT'] = 1
     bal = {sym:bal[sym]*price[sym] for sym in bal}
     logbot.logs('position in USDT: '+str(bal))
